@@ -327,21 +327,7 @@
                                             </div>
 
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div class="md:col-span-2 text-center border-b pb-4 mb-2">
-                                                    <div class="mb-2 text-sm text-gray-500 font-medium">File Saat Ini
-                                                    </div>
-                                                    <img id="previewEdit{{ $doc->id }}"
-                                                        src="{{ asset('storage/' . $doc->file_path) }}"
-                                                        class="h-32 mx-auto rounded border shadow-sm mb-4 object-contain">
 
-                                                    <label class="block text-sm font-bold text-gray-700 mb-2">Upload
-                                                        File Baru (Revisi)</label>
-                                                    <input type="file" name="file_path"
-                                                        onchange="updatePreview(event, 'previewEdit{{ $doc->id }}')"
-                                                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                                                    <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ingin
-                                                        mengubah file.</p>
-                                                </div>
 
                                                 <div>
                                                     <label class="block text-sm font-medium mb-1">Kategori</label>
@@ -359,18 +345,33 @@
                                                     </select>
                                                 </div>
                                                 <div>
+                                                    <label class="block text-sm font-medium mb-1">Nomor Dokumen</label>
+                                                    <input type="text" name="document_number"
+                                                        value="{{ $doc->document_number }}"
+                                                        class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                                        required>
+                                                </div>
+                                                <div class="md:col-span-2">
                                                     <label class="block text-sm font-medium mb-1">Tanggal</label>
                                                     <input type="date" name="document_date"
                                                         value="{{ $doc->document_date }}"
                                                         class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                                         required>
                                                 </div>
-                                                <div class="md:col-span-2">
-                                                    <label class="block text-sm font-medium mb-1">Nomor Dokumen</label>
-                                                    <input type="text" name="document_number"
-                                                        value="{{ $doc->document_number }}"
-                                                        class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                                                        required>
+                                                <div class="md:col-span-2 text-center border-b pb-4 mb-2">
+                                                    <div class="mb-2 text-sm text-gray-500 font-medium">File Saat Ini
+                                                    </div>
+                                                    <img id="previewEdit{{ $doc->id }}"
+                                                        src="{{ asset('storage/' . $doc->file_path) }}"
+                                                        class="h-32 mx-auto rounded border shadow-sm mb-4 object-contain">
+
+                                                    <label class="block text-sm font-bold text-gray-700 mb-2">Upload
+                                                        File Baru (Revisi)</label>
+                                                    <input type="file" name="file_path"
+                                                        onchange="updatePreview(event, 'previewEdit{{ $doc->id }}')"
+                                                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                                                    <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ingin
+                                                        mengubah file.</p>
                                                 </div>
 
                                                 <div
@@ -488,6 +489,28 @@
                 </div>
 
                 <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Kategori</label>
+                        <select name="category"
+                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                            required>
+                            <option value="" selected disabled>Pilih Kategori...</option>
+                            <option value="Slip Setoran">Slip Setoran</option>
+                            <option value="Bukti Transfer">Bukti Transfer</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div><label class="block text-sm font-medium mb-1">No Dokumen</label><input type="text"
+                            name="document_number"
+                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Contoh: DOC-001" required></div>
+                    <div class="md:col-span-2"><label class="block text-sm font-medium mb-1">Tanggal</label><input
+                            type="date" name="document_date"
+                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                            required></div>
+
                     <div class="md:col-span-2 flex flex-col items-center">
                         <div
                             class="w-full h-40 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center mb-3 overflow-hidden relative group hover:border-blue-400 transition">
@@ -507,26 +530,6 @@
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Kategori</label>
-                        <select name="category"
-                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                            required>
-                            <option value="" selected disabled>Pilih Kategori...</option>
-                            <option value="Slip Setoran">Slip Setoran</option>
-                            <option value="Bukti Transfer">Bukti Transfer</option>
-                            <option value="Lainnya">Lainnya</option>
-                        </select>
-                    </div>
-                    <div><label class="block text-sm font-medium mb-1">Tanggal</label><input type="date"
-                            name="document_date"
-                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                            required></div>
-                    <div class="md:col-span-2"><label class="block text-sm font-medium mb-1">No Dokumen</label><input
-                            type="text" name="document_number"
-                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Contoh: DOC-001" required></div>
-
                     <div class="md:col-span-2 border-t pt-2 mt-2 font-semibold text-gray-700">Lokasi Fisik</div>
 
                     <div>
@@ -534,7 +537,7 @@
                         <select name="cabinet"
                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                             required>
-                            <option value="" selected disabled>Pilih...</option>
+                            <option value="" selected disabled>Pilih lemari</option>
                             <option value="A">Lemari A</option>
                             <option value="B">Lemari B</option>
                             <option value="C">Lemari C</option>
@@ -546,7 +549,7 @@
                         <select name="shelf"
                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                             required>
-                            <option value="" selected disabled>Pilih...</option>
+                            <option value="" selected disabled>Pilih rak</option>
                             @foreach (range(1, 5) as $i)
                                 <option value="{{ $i }}">Rak {{ $i }}</option>
                             @endforeach
@@ -557,16 +560,17 @@
                         <select name="box"
                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                             required>
-                            <option value="" selected disabled>Pilih...</option>
+                            <option value="" selected disabled>Pilih kotak</option>
                             @foreach (range(1, 10) as $i)
                                 <option value="{{ $i }}">Kotak {{ $i }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="md:col-span-2"><label class="block text-sm font-medium mb-1">Keterangan</label><input
-                            type="text" name="description"
+                    <div class="md:col-span-2"><label class="block text-sm font-medium mb-1">Keterangan</label>
+                        <textarea name="description" rows="2"
                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Opsional"></div>
+                            placeholder="Keterangan tambahan (opsional)"></textarea>
+                    </div>
                 </div>
 
                 <div class="p-5 border-t bg-gray-50 flex justify-end gap-2 rounded-b-2xl">

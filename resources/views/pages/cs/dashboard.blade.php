@@ -323,28 +323,6 @@
                                             </div>
 
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div class="md:col-span-2 text-center border-b pb-4 mb-2">
-                                                    <div class="mb-2 text-sm text-gray-500 font-medium">File Saat Ini
-                                                    </div>
-                                                    <img id="previewEdit{{ $doc->id }}"
-                                                        src="{{ asset('storage/' . $doc->file_path) }}"
-                                                        class="h-32 mx-auto rounded border shadow-sm mb-4 object-contain">
-
-                                                    <label class="block text-sm font-bold text-gray-700 mb-2">Upload
-                                                        File Baru (Revisi)</label>
-                                                    <input type="file" name="file_path"
-                                                        onchange="updatePreview(event, 'previewEdit{{ $doc->id }}')"
-                                                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                                                    <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ingin
-                                                        mengubah file.</p>
-                                                </div>
-
-                                                <div>
-                                                    <label class="block text-sm font-medium mb-1">CIF</label>
-                                                    <input type="text" name="cif" value="{{ $doc->cif }}"
-                                                        class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                                                        required>
-                                                </div>
                                                 <div>
                                                     <label class="block text-sm font-medium mb-1">Kategori</label>
                                                     <select name="category"
@@ -374,6 +352,27 @@
                                                         value="{{ $doc->document_date }}"
                                                         class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                                         required>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium mb-1">CIF</label>
+                                                    <input type="text" name="cif" value="{{ $doc->cif }}"
+                                                        class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                                        required>
+                                                </div>
+                                                <div class="md:col-span-2 text-center border-b pb-4 mb-2">
+                                                    <div class="mb-2 text-sm text-gray-500 font-medium">File Saat Ini
+                                                    </div>
+                                                    <img id="previewEdit{{ $doc->id }}"
+                                                        src="{{ asset('storage/' . $doc->file_path) }}"
+                                                        class="h-32 mx-auto rounded border shadow-sm mb-4 object-contain">
+
+                                                    <label class="block text-sm font-bold text-gray-700 mb-2">Upload
+                                                        File Baru (Revisi)</label>
+                                                    <input type="file" name="file_path"
+                                                        onchange="updatePreview(event, 'previewEdit{{ $doc->id }}')"
+                                                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                                                    <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ingin
+                                                        mengubah file.</p>
                                                 </div>
 
                                                 <div
@@ -490,6 +489,36 @@
 
                 <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                     {{-- Preview Image Upload --}}
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Kategori</label>
+                        <select name="category"
+                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                            required>
+                            <option value="" selected disabled>Pilih Kategori...</option>
+                            <option value="Form Rekening">Form Rekening</option>
+                            <option value="Keluhan Nasabah">Keluhan Nasabah</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">No Dokumen</label>
+                        <input type="text" name="document_number"
+                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                            required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Tanggal</label>
+                        <input type="date" name="document_date"
+                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                            required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">CIF</label>
+                        <input type="text" name="cif"
+                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                            required>
+                    </div>
+
                     <div class="md:col-span-2 flex flex-col items-center">
                         <div
                             class="w-full h-40 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center mb-3 overflow-hidden relative group hover:border-blue-400 transition">
@@ -507,36 +536,6 @@
                                 onchange="previewImage(event, 'preview-upload-cs')"
                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required>
                         </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium mb-1">CIF</label>
-                        <input type="text" name="cif"
-                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                            required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Kategori</label>
-                        <select name="category"
-                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                            required>
-                            <option value="" selected disabled>Pilih Kategori...</option>
-                            <option value="Form Rekening">Form Rekening</option>
-                            <option value="Keluhan Nasabah">Keluhan Nasabah</option>
-                            <option value="Lainnya">Lainnya</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Tanggal</label>
-                        <input type="date" name="document_date"
-                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                            required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">No Dokumen</label>
-                        <input type="text" name="document_number"
-                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                            required>
                     </div>
 
                     <div class="md:col-span-2 border-t pt-2 mt-2 font-semibold text-gray-700">Lokasi Fisik</div>
@@ -582,7 +581,7 @@
 
                     </div>
 
-                    <div class="p-5 border-t bg-gray-50 flex justify-end gap-2 rounded-b-2xl">
+                    <div class="p-5 border-t md:col-span-2 bg-gray-50 flex justify-end gap-2 rounded-b-2xl">
                         <button type="button" onclick="closeModal('uploadModalCs')"
                             class="px-4 py-2 border rounded-lg bg-white text-gray-700 hover:bg-gray-50 font-medium">Batal</button>
                         <button type="submit"
