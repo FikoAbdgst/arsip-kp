@@ -15,38 +15,44 @@
                 <div class="flex items-center gap-1.5">
                     <span class="w-3 h-3 rounded-full bg-green-500"></span> Aktif (< 4 Tahun) </div>
                         <div class="flex items-center gap-1.5">
-                            {{-- UBAH: Warna tetap kuning/orange atau bisa diganti abu-abu, label jadi Tidak Aktif --}}
                             <span class="w-3 h-3 rounded-full bg-yellow-500"></span> Tidak Aktif
                         </div>
                 </div>
             </div>
 
-            {{-- Statistik Card dengan Filter JS --}}
+            {{-- Statistik Card --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                <div onclick="filterApproval('all')" id="card-all"
-                    class="bg-white rounded-xl border p-4 cursor-pointer hover:shadow-lg transition-all duration-200 filter-card active-filter">
+                {{-- Card Total --}}
+                <div onclick="applyFilter('approval', 'all')"
+                    class="bg-white rounded-xl border p-4 cursor-pointer hover:shadow-lg transition-all duration-200 filter-card {{ request('approval', 'all') == 'all' ? 'active-filter' : '' }}">
                     <div class="text-sm text-gray-500">Total Dokumen</div>
-                    <div class="text-2xl font-semibold mt-1">{{ $documents->count() }}</div>
+                    <div class="text-2xl font-semibold mt-1">{{ $stats['total'] }}</div>
                 </div>
-                <div onclick="filterApproval('approved')" id="card-approved"
-                    class="bg-white rounded-xl border p-4 cursor-pointer hover:shadow-lg transition-all duration-200 filter-card">
+
+                {{-- Card Approved --}}
+                <div onclick="applyFilter('approval', 'approved')"
+                    class="bg-white rounded-xl border p-4 cursor-pointer hover:shadow-lg transition-all duration-200 filter-card {{ request('approval') == 'approved' ? 'active-filter' : '' }}">
                     <div class="text-sm text-gray-500">Approved</div>
                     <div class="text-2xl font-semibold mt-1 text-green-600">
-                        {{ $documents->where('status', 'approved')->count() }}
+                        {{ $stats['approved'] }}
                     </div>
                 </div>
-                <div onclick="filterApproval('rejected')" id="card-rejected"
-                    class="bg-white rounded-xl border p-4 cursor-pointer hover:shadow-lg transition-all duration-200 filter-card">
+
+                {{-- Card Rejected --}}
+                <div onclick="applyFilter('approval', 'rejected')"
+                    class="bg-white rounded-xl border p-4 cursor-pointer hover:shadow-lg transition-all duration-200 filter-card {{ request('approval') == 'rejected' ? 'active-filter' : '' }}">
                     <div class="text-sm text-gray-500">Rejected</div>
                     <div class="text-2xl font-semibold mt-1 text-red-600">
-                        {{ $documents->where('status', 'rejected')->count() }}
+                        {{ $stats['rejected'] }}
                     </div>
                 </div>
-                <div onclick="filterApproval('today')" id="card-today"
-                    class="bg-white rounded-xl border p-4 cursor-pointer hover:shadow-lg transition-all duration-200 filter-card">
+
+                {{-- Card Hari Ini --}}
+                <div onclick="applyFilter('approval', 'today')"
+                    class="bg-white rounded-xl border p-4 cursor-pointer hover:shadow-lg transition-all duration-200 filter-card {{ request('approval') == 'today' ? 'active-filter' : '' }}">
                     <div class="text-sm text-gray-500">Masuk Hari Ini</div>
                     <div class="text-2xl font-semibold mt-1 text-blue-600">
-                        {{ $documents->filter(fn($d) => $d->created_at->isToday())->count() }}
+                        {{ $stats['today'] }}
                     </div>
                 </div>
             </div>
@@ -57,22 +63,23 @@
                 <div class="p-6 border-b flex flex-col md:flex-row justify-between items-center gap-4">
                     <h3 class="text-lg font-semibold flex items-center gap-2">
                         <span id="table-title">Semua Dokumen</span>
-                        <span id="filtered-count" class="text-sm font-normal text-gray-500"></span>
+                        <span class="text-sm font-normal text-gray-500">
+                            (Total: {{ $documents->total() }} data)
+                        </span>
                     </h3>
 
                     {{-- Tab Filter Lifecycle (Aktif vs Tidak Aktif) --}}
                     <div class="flex bg-gray-100 p-1 rounded-lg">
-                        <button onclick="filterLifecycle('all')" id="tab-all"
-                            class="px-4 py-1.5 text-sm font-medium rounded-md shadow-sm bg-white text-gray-800 transition-all tab-btn">
+                        <button onclick="applyFilter('lifecycle', 'all')"
+                            class="px-4 py-1.5 text-sm font-medium rounded-md transition-all {{ request('lifecycle', 'all') == 'all' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
                             Semua
                         </button>
-                        <button onclick="filterLifecycle('active')" id="tab-active"
-                            class="px-4 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all tab-btn">
+                        <button onclick="applyFilter('lifecycle', 'active')"
+                            class="px-4 py-1.5 text-sm font-medium rounded-md transition-all {{ request('lifecycle') == 'active' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
                             Aktif
                         </button>
-                        {{-- UBAH: ID dan Label diganti --}}
-                        <button onclick="filterLifecycle('inactive')" id="tab-inactive"
-                            class="px-4 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-yellow-700 transition-all tab-btn">
+                        <button onclick="applyFilter('lifecycle', 'inactive')"
+                            class="px-4 py-1.5 text-sm font-medium rounded-md transition-all {{ request('lifecycle') == 'inactive' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-yellow-700' }}">
                             Tidak Aktif
                         </button>
                     </div>
@@ -93,17 +100,12 @@
                         <tbody id="document-table-body">
                             @forelse($documents as $doc)
                                 @php
-                                    // UBAH: Logic 'retention' diganti 'inactive'
-                                    $lifecycleStatus = $doc->is_active ? 'active' : 'inactive';
                                     $rowClass = !$doc->is_active
                                         ? 'bg-yellow-50/50 text-gray-700'
                                         : 'bg-white text-gray-900';
                                 @endphp
 
-                                <tr class="border-b transition hover:bg-gray-50 document-row {{ $rowClass }}"
-                                    data-approval="{{ $doc->status }}"
-                                    data-today="{{ $doc->created_at->isToday() ? 'yes' : 'no' }}"
-                                    data-lifecycle="{{ $lifecycleStatus }}">
+                                <tr class="border-b transition hover:bg-gray-50 {{ $rowClass }}">
 
                                     <td class="py-3 px-4 font-medium">
                                         {{ $doc->document_number }}
@@ -123,7 +125,6 @@
 
                                     <td class="py-3 px-4">
                                         @if (!$doc->is_active)
-                                            {{-- UBAH: Badge Masa Retensi jadi Tidak Aktif --}}
                                             <span
                                                 class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-700 border border-yellow-200"
                                                 title="Dokumen sudah tidak aktif">
@@ -140,11 +141,11 @@
                                     <td class="py-3 px-4">
                                         <span
                                             class="px-2 py-1 text-xs font-semibold rounded-full
-                                    {{ $doc->status === 'approved'
-                                        ? 'bg-green-100 text-green-700 border border-green-200'
-                                        : ($doc->status === 'rejected'
-                                            ? 'bg-red-100 text-red-700 border border-red-200'
-                                            : 'bg-yellow-100 text-yellow-700 border border-yellow-200') }}">
+                                {{ $doc->status === 'approved'
+                                    ? 'bg-green-100 text-green-700 border border-green-200'
+                                    : ($doc->status === 'rejected'
+                                        ? 'bg-red-100 text-red-700 border border-red-200'
+                                        : 'bg-yellow-100 text-yellow-700 border border-yellow-200') }}">
                                             {{ ucfirst($doc->status) }}
                                         </span>
                                     </td>
@@ -156,6 +157,7 @@
                                 </tr>
 
                                 {{-- MODAL DETAIL --}}
+                                {{-- PENTING: ID Modal harus unik per loop --}}
                                 <div id="detailModal-{{ $doc->id }}"
                                     class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50 backdrop-blur-sm transition-opacity">
                                     <div
@@ -173,7 +175,6 @@
                                                         <span
                                                             class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">SAMPAH</span>
                                                     @elseif(!$doc->is_active)
-                                                        {{-- UBAH: Label ARSIP disamakan jadi TIDAK AKTIF agar konsisten, atau biarkan ARSIP jika itu istilah database --}}
                                                         <span
                                                             class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-200 text-gray-600">TIDAK
                                                             AKTIF</span>
@@ -193,8 +194,8 @@
                                             </button>
                                         </div>
 
+                                        {{-- Konten Modal: Read Only --}}
                                         <div id="viewSection{{ $doc->id }}" class="p-6">
-                                            {{-- Konten Detail (Tidak ada perubahan logic) --}}
                                             @if ($doc->status == 'rejected')
                                                 <div
                                                     class="p-4 bg-red-50 text-red-800 rounded-lg border border-red-200 mb-6 flex items-start gap-3">
@@ -306,6 +307,7 @@
                                                     Tutup
                                                 </button>
 
+                                                {{-- Fitur Hapus Permanen (jika sudah di tong sampah) --}}
                                                 @if ($doc->trashed() && auth()->user()->role !== 'supervisor')
                                                     <form action="{{ route('documents.destroy', $doc->id) }}"
                                                         method="POST"
@@ -318,6 +320,7 @@
                                                     </form>
                                                 @endif
 
+                                                {{-- Fitur Hapus/Edit (jika belum di tong sampah) --}}
                                                 @if (!$doc->trashed() && auth()->user()->role !== 'supervisor')
                                                     @if ($doc->status == 'rejected')
                                                         <form action="{{ route('documents.destroy', $doc->id) }}"
@@ -340,6 +343,7 @@
                                             </div>
                                         </div>
 
+                                        {{-- Konten Modal: Edit Form --}}
                                         <div id="editSection{{ $doc->id }}" class="hidden">
                                             <form action="{{ route('documents.update', $doc->id) }}" method="POST"
                                                 enctype="multipart/form-data">
@@ -470,14 +474,30 @@
                         Data tidak ditemukan pada filter ini.
                     </div>
                 </div>
+
+                {{-- LINK PAGINATION --}}
+                <div class="p-4 border-t bg-gray-50">
+                    {{ $documents->links() }}
+                </div>
             </div>
 
             {{-- SCRIPTS --}}
             <script>
-                // State Filter
-                let currentApprovalFilter = 'all';
-                let currentLifecycleFilter = 'all';
+                // Fungsi Filter Server-side
+                function applyFilter(key, value) {
+                    const url = new URL(window.location.href);
 
+                    // Set parameter filter
+                    url.searchParams.set(key, value);
+
+                    // Reset page ke 1 setiap kali filter berubah
+                    url.searchParams.delete('page');
+
+                    // Reload halaman
+                    window.location.href = url.toString();
+                }
+
+                // Fungsi Modal & Detail
                 function openDetail(id) {
                     const modal = document.getElementById('detailModal-' + id);
                     if (modal) {
@@ -507,84 +527,16 @@
                     }
                 }
 
-                // Filter 1: Berdasarkan Kartu Atas (Approved/Rejected)
-                function filterApproval(filter) {
-                    currentApprovalFilter = filter;
-                    document.querySelectorAll('.filter-card').forEach(card => card.classList.remove('active-filter'));
-                    document.getElementById('card-' + filter).classList.add('active-filter');
-                    applyFilters();
-                }
-
-                // Filter 2: Berdasarkan Tab Lifecycle (Aktif/Tidak Aktif)
-                function filterLifecycle(filter) {
-                    currentLifecycleFilter = filter;
-
-                    document.querySelectorAll('.tab-btn').forEach(btn => {
-                        btn.classList.remove('bg-white', 'text-gray-800', 'shadow-sm');
-                        btn.classList.add('text-gray-500');
-                    });
-
-                    const activeTab = document.getElementById('tab-' + filter);
-                    activeTab.classList.remove('text-gray-500');
-                    activeTab.classList.add('bg-white', 'text-gray-800', 'shadow-sm');
-
-                    applyFilters();
-                }
-
-                // Logic Penggabungan Filter
-                function applyFilters() {
-                    const rows = document.querySelectorAll('.document-row');
-                    let visibleCount = 0;
-
-                    rows.forEach(row => {
-                        const approval = row.dataset.approval;
-                        const today = row.dataset.today;
-                        const lifecycle = row.dataset.lifecycle; // active, inactive, trash
-
-                        // Cek Filter Approval
-                        let matchApproval = false;
-                        if (currentApprovalFilter === 'all') matchApproval = true;
-                        else if (currentApprovalFilter === 'approved') matchApproval = (approval === 'approved');
-                        else if (currentApprovalFilter === 'rejected') matchApproval = (approval === 'rejected');
-                        else if (currentApprovalFilter === 'today') matchApproval = (today === 'yes');
-
-                        // Cek Filter Lifecycle
-                        let matchLifecycle = false;
-                        if (currentLifecycleFilter === 'all') matchLifecycle = true;
-                        else matchLifecycle = (lifecycle === currentLifecycleFilter);
-
-                        if (matchApproval && matchLifecycle) {
-                            row.classList.remove('hidden');
-                            visibleCount++;
-                        } else {
-                            row.classList.add('hidden');
-                        }
-                    });
-
-                    // Update UI Kosong
-                    const emptyRow = document.getElementById('empty-row');
-                    const noResults = document.getElementById('no-results');
-
-                    if (emptyRow && rows.length === 0) {
-                        emptyRow.classList.remove('hidden');
-                        noResults.classList.add('hidden');
-                    } else {
-                        if (emptyRow) emptyRow.classList.add('hidden');
-                        if (visibleCount === 0) noResults.classList.remove('hidden');
-                        else noResults.classList.add('hidden');
-                    }
-
-                    document.getElementById('filtered-count').textContent = `(${visibleCount} data)`;
-                }
-
+                // CSS untuk Active Filter
                 const style = document.createElement('style');
                 style.textContent = `
-            .active-filter {
-                border-color: #3b82f6 !important;
-                border-width: 2px !important;
-                background: linear-gradient(to bottom right, #eff6ff, #ffffff) !important;
-            }
-        `;
+        .active-filter {
+            border-color: #3b82f6 !important;
+            border-width: 2px !important;
+            background: linear-gradient(to bottom right, #eff6ff, #ffffff) !important;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06) !important;
+        }
+    `;
                 document.head.appendChild(style);
             </script>
 </x-app-shell>

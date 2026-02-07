@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Document;
 use App\Models\ActivityLog;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -11,23 +12,78 @@ use Illuminate\Support\Facades\Storage;
 class DocumentController extends Controller
 {
     // Menampilkan halaman Teller
-    public function indexTeller()
+    // Menampilkan halaman Teller
+    public function indexTeller(Request $request)
     {
-        $documents = Document::where('source', 'teller')
-            ->latest()
-            ->get();
-        return view('pages.teller.dashboard', compact('documents'));
+        // 1. Hitung Statistik Global (Tetap hitung semua agar angka kartu stabil)
+        $stats = [
+            'total'    => Document::where('source', 'teller')->count(),
+            'approved' => Document::where('source', 'teller')->where('status', 'approved')->count(),
+            'rejected' => Document::where('source', 'teller')->where('status', 'rejected')->count(),
+            'today'    => Document::where('source', 'teller')->whereDate('created_at', \Carbon\Carbon::today())->count(),
+        ];
+
+        // 2. Query Dasar
+        $query = Document::where('source', 'teller');
+
+        // 3. Filter Lifecycle (Aktif/Tidak Aktif)
+        if ($request->has('lifecycle') && $request->lifecycle !== 'all') {
+            $isActive = $request->lifecycle === 'active';
+            $query->where('is_active', $isActive);
+        }
+
+        // 4. Filter Approval (Status)
+        if ($request->has('approval') && $request->approval !== 'all') {
+            if ($request->approval === 'today') {
+                $query->whereDate('created_at', Carbon::today());
+            } else {
+                $query->where('status', $request->approval);
+            }
+        }
+
+        // 5. Ambil Data dengan Pagination & Append Query String
+        $documents = $query->latest()
+            ->paginate(10)
+            ->appends($request->all());
+
+        return view('pages.teller.dashboard', compact('documents', 'stats'));
     }
 
-    // Menampilkan halaman CS
-    public function indexCs()
+    public function indexCs(Request $request)
     {
-        $documents = Document::where('source', 'cs')
-            ->latest()
-            ->get();
-        return view('pages.cs.dashboard', compact('documents'));
-    }
+        // 1. Statistik Global (Tetap hitung semua agar angka di kartu tidak berubah-ubah)
+        $stats = [
+            'total'    => Document::where('source', 'cs')->count(),
+            'approved' => Document::where('source', 'cs')->where('status', 'approved')->count(),
+            'rejected' => Document::where('source', 'cs')->where('status', 'rejected')->count(),
+            'today'    => Document::where('source', 'cs')->whereDate('created_at', Carbon::today())->count(),
+        ];
 
+        // 2. Query Dasar
+        $query = Document::where('source', 'cs');
+
+        // 3. Filter Server-side: Lifecycle (Aktif/Tidak Aktif)
+        if ($request->has('lifecycle') && $request->lifecycle !== 'all') {
+            $isActive = $request->lifecycle === 'active';
+            $query->where('is_active', $isActive);
+        }
+
+        // 4. Filter Server-side: Approval (Status)
+        if ($request->has('approval') && $request->approval !== 'all') {
+            if ($request->approval === 'today') {
+                $query->whereDate('created_at', Carbon::today());
+            } else {
+                $query->where('status', $request->approval);
+            }
+        }
+
+        // 5. Ambil Data dengan Pagination & Pertahankan Query String (agar filter tidak hilang saat ganti halaman)
+        $documents = $query->latest()
+            ->paginate(10)
+            ->appends($request->all());
+
+        return view('pages.cs.dashboard', compact('documents', 'stats'));
+    }
     // Simpan Dokumen Baru
     public function store(Request $request)
     {

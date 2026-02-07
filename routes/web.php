@@ -49,6 +49,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/activity', [ActivityLogController::class, 'index'])->name('activity.index');
     Route::post('/activity/{id}/read', [ActivityLogController::class, 'markAsRead'])->name('activity.read');
     Route::post('/activity/read-all', [ActivityLogController::class, 'markAllRead'])->name('activity.readAll');
+    Route::get('/ajax/dashboard-updates', [DocumentController::class, 'getDashboardUpdates'])->name('ajax.dashboard');
+    Route::get('/ajax/activity-updates', [ActivityLogController::class, 'getActivityUpdates'])->name('ajax.activity');
 });
 
 require __DIR__ . '/auth.php';
