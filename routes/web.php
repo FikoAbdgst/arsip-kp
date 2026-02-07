@@ -1,100 +1,52 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ActivityLogController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Public / Landing
-|--------------------------------------------------------------------------
-*/
 Route::get('/', function () {
-    return redirect()->route('login');
+    return view('welcome');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Pages (After Login)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
 
-    // Dashboard utama
-    Route::get('/dashboard', function () {
-        return view('pages.dashboard');
-    })->name('dashboard');
+    // Dashboard (Admin & Supervisor)
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Dashboard per divisi (halaman filter, bukan role)
-    Route::get('/teller', function () {
-        return view('pages.teller.dashboard');
-    })->name('teller.dashboard');
+    // Dokumen (Teller & CS)
+    Route::get('/teller', [DocumentController::class, 'indexTeller'])->name('teller.index');
+    Route::get('/cs', [DocumentController::class, 'indexCs'])->name('cs.index');
 
-    Route::get('/cs', function () {
-        return view('pages.cs.dashboard');
-    })->name('cs.dashboard');
+    // Create & Update (Admin Only logic handled in blade or middleware, but simple role check here)
+    Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+    Route::put('/documents/{id}', [DocumentController::class, 'update'])->name('documents.update');
+    Route::delete('/documents/{id}', [DocumentController::class, 'destroy'])->name('documents.destroy');
 
-    // Notifications
-    Route::get('/notifications', function () {
-        return view('pages.notifications.index');
-    })->name('notifications.index');
+    // Verifikasi (Supervisor Only)
+    // Sebaiknya bungkus dengan middleware role:supervisor jika ada
+    Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
+    Route::post('/verification/{id}/approve', [VerificationController::class, 'approve'])->name('verification.approve');
+    Route::post('/verification/{id}/reject', [VerificationController::class, 'reject'])->name('verification.reject');
 
     // Reports
-    Route::get('/reports', function () {
-        return view('pages.reports.index');
-    })->name('reports.index');
-});
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
+    Route::get('/reports/export/excel', [ReportController::class, 'exportExcel'])->name('reports.export.excel');
 
-/*
-|--------------------------------------------------------------------------
-| Admin only
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'role:admin'])->group(function () {
+    // Activity Logs
+    Route::get('/activity', function () {
+        $activities = \App\Models\ActivityLog::with('user')->latest()->paginate(10);
+        return view('pages.notifications.index', compact('activities'));
+    })->name('activity.index');
 
-    // FORM CREATE harus DI ATAS route /dokumen/{no}
-    Route::get('/dokumen/create', function () {
-        return view('pages.dokumen.create');
-    })->name('dokumen.create');
-
-});
-
-/*
-|--------------------------------------------------------------------------
-| Supervisor only
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'role:supervisor'])->group(function () {
-
-    Route::get('/verifikasi', function () {
-        return view('pages.verifikasi.index');
-    })->name('verifikasi.index');
-
-});
-
-/*
-|--------------------------------------------------------------------------
-| Dokumen Detail (untuk semua user login)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth'])->group(function () {
-
-    Route::get('/dokumen/{no}', function ($no) {
-        return view('pages.dokumen.show', compact('no'));
-    })
-    ->where('no', '^(?!create$).+') // cegah "create" masuk ke {no}
-    ->name('dokumen.show');
-
-});
-
-/*
-|--------------------------------------------------------------------------
-| Profile (Breeze default)
-|--------------------------------------------------------------------------
-*/
-Route::middleware('auth')->group(function () {
+    // Profile standard routes...
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
