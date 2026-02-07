@@ -3,16 +3,13 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
+        // User yang sudah ada
         User::create([
             'name' => 'Admin User',
             'email' => 'admin@bri.local',
@@ -26,5 +23,8 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
             'role' => 'supervisor',
         ]);
+
+        // Panggil DocumentSeeder
+        $this->call(DocumentSeeder::class);
     }
 }
