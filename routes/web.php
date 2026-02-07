@@ -37,16 +37,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reports/export/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
     Route::get('/reports/export/excel', [ReportController::class, 'exportExcel'])->name('reports.export.excel');
 
-    // Activity Logs
-    Route::get('/activity', function () {
-        $activities = \App\Models\ActivityLog::with('user')->latest()->paginate(10);
-        return view('pages.notifications.index', compact('activities'));
-    })->name('activity.index');
+
 
     // Profile standard routes...
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
+    Route::get('/reports/export/excel', [ReportController::class, 'exportExcel'])->name('reports.export.excel');
+    Route::get('/activity', [ActivityLogController::class, 'index'])->name('activity.index');
+    Route::post('/activity/{id}/read', [ActivityLogController::class, 'markAsRead'])->name('activity.read');
+    Route::post('/activity/read-all', [ActivityLogController::class, 'markAllRead'])->name('activity.readAll');
 });
 
 require __DIR__ . '/auth.php';

@@ -1,5 +1,5 @@
 @php
-    $link = 'block px-3 py-2 rounded-lg text-sm hover:bg-gray-100 transition-colors';
+    $link = 'block px-3 py-2 rounded-lg text-sm hover:bg-gray-100 transition-colors flex items-center justify-between'; // Tambahkan flex & justify-between
     // Helper function untuk cek active state
     $isActive = fn($name) => request()->routeIs($name) ? 'bg-gray-100 font-medium text-blue-600' : 'text-gray-600';
 @endphp
@@ -7,35 +7,42 @@
 <nav class="p-4 space-y-1 text-sm">
     {{-- Dashboard (Admin & Supervisor) --}}
     <a href="{{ route('dashboard') }}" class="{{ $link }} {{ $isActive('dashboard') }}">
-        Dashboard
+        <span>Dashboard</span>
     </a>
 
     {{-- Menu Teller --}}
     <a href="{{ route('teller.index') }}" class="{{ $link }} {{ $isActive('teller.index') }}">
-        Teller
+        <span>Teller</span>
     </a>
 
     {{-- Menu CS --}}
     <a href="{{ route('cs.index') }}" class="{{ $link }} {{ $isActive('cs.index') }}">
-        Customer Service
+        <span>Customer Service</span>
     </a>
 
     {{-- Menu Supervisor Only --}}
     @if (auth()->user()->role === 'supervisor')
         <a href="{{ route('verification.index') }}" class="{{ $link }} {{ $isActive('verification.index') }}">
-            Verifikasi
+            <span>Verifikasi</span>
+
+            {{-- BADGE JUMLAH PENDING --}}
+            @if (isset($pendingCount) && $pendingCount > 0)
+                <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                    {{ $pendingCount }}
+                </span>
+            @endif
         </a>
     @endif
 
     {{-- Reports --}}
     <a href="{{ route('reports.index') }}" class="{{ $link }} {{ $isActive('reports.index') }}">
-        Laporan
+        <span>Laporan</span>
     </a>
 
-    {{-- Activity Log (Opsional jika sudah dibuat) --}}
+    {{-- Activity Log (Opsional) --}}
     @if (Route::has('activity.index'))
         <a href="{{ route('activity.index') }}" class="{{ $link }} {{ $isActive('activity.index') }}">
-            Aktivitas
+            <span>Aktivitas</span>
         </a>
     @endif
 </nav>
