@@ -17,33 +17,34 @@
         $statusBadge = [
             'Approved' => ['bg' => 'bg-green-100', 'text' => 'text-green-700'],
             'Rejected' => ['bg' => 'bg-red-100', 'text' => 'text-red-700'],
-            'Pending'  => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-700'],
+            'Pending' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-700'],
         ][$doc['status']];
     @endphp
 
     {{-- Breadcrumb + header info --}}
-    <div class="bg-white rounded-xl border p-6">
-        <div class="text-sm text-gray-500">
-            Dokumen / <span class="text-gray-700 font-medium">{{ $doc['no'] }}</span>
-        </div>
-
-        <div class="mt-2 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div>
-                <div class="text-xl font-semibold">{{ $doc['no'] }}</div>
-                <div class="text-sm text-gray-600 mt-1">
-                    {{ $doc['kategori'] }} • {{ $doc['sumber'] }} • {{ $doc['tanggal'] }}
-                </div>
+    <div id="doc-header-status">
+        <div class="bg-white rounded-xl border p-6">
+            <div class="text-sm text-gray-500">
+                Dokumen / <span class="text-gray-700 font-medium">{{ $doc['no'] }}</span>
             </div>
 
-            <div class="flex items-center gap-2">
-                <span class="px-3 py-1 text-xs rounded-full {{ $statusBadge['bg'] }} {{ $statusBadge['text'] }}">
-                    {{ $doc['status'] }}
-                </span>
+            <div class="mt-2 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                    <div class="text-xl font-semibold">{{ $doc['no'] }}</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        {{ $doc['kategori'] }} • {{ $doc['sumber'] }} • {{ $doc['tanggal'] }}
+                    </div>
+                </div>
 
-                <button type="button"
-                    class="px-4 py-2 rounded-lg border bg-white hover:bg-gray-50 text-sm">
-                    Download File (Dummy)
-                </button>
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 text-xs rounded-full {{ $statusBadge['bg'] }} {{ $statusBadge['text'] }}">
+                        {{ $doc['status'] }}
+                    </span>
+
+                    <button type="button" class="px-4 py-2 rounded-lg border bg-white hover:bg-gray-50 text-sm">
+                        Download File (Dummy)
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -56,7 +57,8 @@
                 <span class="text-xs text-gray-500">{{ $doc['file'] }}</span>
             </div>
 
-            <div class="mt-4 h-80 rounded-xl border border-dashed flex items-center justify-center text-sm text-gray-500">
+            <div
+                class="mt-4 h-80 rounded-xl border border-dashed flex items-center justify-center text-sm text-gray-500">
                 Placeholder preview (PDF/Image)
             </div>
 
@@ -120,32 +122,35 @@
             </div>
 
             <div class="mt-4 text-sm text-gray-600">
-                Format: Lemari {{ $doc['lokasi']['lemari'] }} • Rak {{ $doc['lokasi']['rak'] }} • Kotak {{ $doc['lokasi']['kotak'] }}
+                Format: Lemari {{ $doc['lokasi']['lemari'] }} • Rak {{ $doc['lokasi']['rak'] }} • Kotak
+                {{ $doc['lokasi']['kotak'] }}
             </div>
         </div>
 
         <div class="bg-white rounded-xl border p-6">
             <h3 class="text-lg font-semibold mb-4">Riwayat</h3>
 
-            <div class="space-y-3 text-sm">
-                <div class="flex items-start gap-3">
-                    <div class="w-2 h-2 rounded-full bg-blue-600 mt-2"></div>
-                    <div>
-                        <div class="font-medium">Dokumen di-upload</div>
-                        <div class="text-gray-600">oleh {{ $doc['uploader'] }} • {{ $doc['uploaded_at'] }}</div>
+            <div id="doc-history-list">
+                <div class="space-y-3 text-sm">
+                    <div class="flex items-start gap-3">
+                        <div class="w-2 h-2 rounded-full bg-blue-600 mt-2"></div>
+                        <div>
+                            <div class="font-medium">Dokumen di-upload</div>
+                            <div class="text-gray-600">oleh {{ $doc['uploader'] }} • {{ $doc['uploaded_at'] }}</div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="flex items-start gap-3">
-                    <div class="w-2 h-2 rounded-full bg-yellow-500 mt-2"></div>
-                    <div>
-                        <div class="font-medium">Status Pending</div>
-                        <div class="text-gray-600">Menunggu verifikasi Supervisor</div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-2 h-2 rounded-full bg-yellow-500 mt-2"></div>
+                        <div>
+                            <div class="font-medium">Status Pending</div>
+                            <div class="text-gray-600">Menunggu verifikasi Supervisor</div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="text-xs text-gray-500 mt-2">
-                    *Nanti kalau sudah approve/reject, riwayat akan bertambah otomatis.
+                    <div class="text-xs text-gray-500 mt-2">
+                        *Nanti kalau sudah approve/reject, riwayat akan bertambah otomatis.
+                    </div>
                 </div>
             </div>
         </div>
@@ -165,16 +170,15 @@
                     Kembali
                 </a>
 
-                <button type="button"
-                    class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm">
+                <button type="button" class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm">
                     Approve (Dummy)
                 </button>
 
-                <button type="button"
-                    class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm">
+                <button type="button" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm">
                     Reject (Dummy)
                 </button>
             </div>
         </div>
     </div>
+
 </x-app-shell>

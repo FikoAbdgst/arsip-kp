@@ -1,6 +1,6 @@
 <x-app-shell title="Dashboard Utama" header="Dashboard">
     {{-- Ringkasan Global --}}
-    <div class="bg-white rounded-xl border p-6 shadow-sm mb-6">
+    <div id="realtime-dashboard" class="bg-white rounded-xl border p-6 shadow-sm mb-6">
         <div class="flex justify-between items-start">
             <div>
                 <div class="text-sm text-gray-500">Overview</div>
@@ -538,5 +538,9 @@
         }
     `;
                 document.head.appendChild(style);
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    activateRealtime('realtime-dashboard', 3000);
+                });
             </script>
 </x-app-shell>

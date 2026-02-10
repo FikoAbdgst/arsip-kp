@@ -84,7 +84,7 @@
         ];
     @endphp
 
-    <div class="mt-6 space-y-3">
+    <div class="mt-6 space-y-3" id="activity-table-container">
         @forelse($activities as $log)
             @php
                 $type = $log->type;
@@ -279,5 +279,8 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
         }
+        document.addEventListener('DOMContentLoaded', function() {
+            activateRealtime('activity-table-container', 3000);
+        });
     </script>
 </x-app-shell>

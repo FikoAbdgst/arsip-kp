@@ -26,8 +26,9 @@ class AppServiceProvider extends ServiceProvider
             $pendingCount = Document::where('status', 'pending')->count();
             $view->with('pendingCount', $pendingCount);
         });
-        if (app()->environment('local')) {
-            URL::forceScheme('https');
-        }
+
+        // if ($this->app->environment('production') || $this->app->environment('local')) {
+        //     URL::forceScheme('https');
+        // }
     }
 }
