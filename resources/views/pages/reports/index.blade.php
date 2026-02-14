@@ -51,21 +51,31 @@
                     </select>
                 </div>
 
-                {{-- 3. Kategori --}}
+                {{-- 3. Kategori (Updated sesuai format baru) --}}
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Kategori</label>
                     <select name="category" class="w-full rounded-lg border-gray-300 focus:border-blue-500 text-sm">
                         <option value="">Semua Kategori</option>
-                        <option value="Slip Setoran" {{ request('category') == 'Slip Setoran' ? 'selected' : '' }}>Slip
-                            Setoran</option>
-                        <option value="Bukti Transfer" {{ request('category') == 'Bukti Transfer' ? 'selected' : '' }}>
-                            Bukti Transfer</option>
-                        <option value="Form Rekening" {{ request('category') == 'Form Rekening' ? 'selected' : '' }}>
-                            Form Rekening</option>
-                        <option value="Keluhan Nasabah"
-                            {{ request('category') == 'Keluhan Nasabah' ? 'selected' : '' }}>Keluhan Nasabah</option>
-                        <option value="Lainnya" {{ request('category') == 'Lainnya' ? 'selected' : '' }}>Lainnya
-                        </option>
+                        <optgroup label="Customer Service">
+                            <option value="FPR" {{ request('category') == 'FPR' ? 'selected' : '' }}>Form pembukaan
+                                rekening (FPR)</option>
+                            <option value="PDN" {{ request('category') == 'PDN' ? 'selected' : '' }}>Form perubahan
+                                data nasabah (PDN)</option>
+                            <option value="FPTR" {{ request('category') == 'FPTR' ? 'selected' : '' }}>Form penutupan
+                                rekening (FPTR)</option>
+                            <option value="FPL" {{ request('category') == 'FPL' ? 'selected' : '' }}>Form Layanan
+                                kartu & digital banking (FPL)</option>
+                        </optgroup>
+                        <optgroup label="Teller">
+                            <option value="TL-ST" {{ request('category') == 'TL-ST' ? 'selected' : '' }}>Transaksi
+                                setoran dan penarikan (TL-ST)</option>
+                            <option value="TL-TP" {{ request('category') == 'TL-TP' ? 'selected' : '' }}>Transaksi
+                                transfer dan pembayaran (TL-TP)</option>
+                            <option value="TL-GK" {{ request('category') == 'TL-GK' ? 'selected' : '' }}>Transaksi
+                                Giro, Kliring, Valuta (TL-GK)</option>
+                            <option value="TL-LA" {{ request('category') == 'TL-LA' ? 'selected' : '' }}>Laporan dan
+                                Administrasi teller (TL-LA)</option>
+                        </optgroup>
                     </select>
                 </div>
             </div>
@@ -204,10 +214,27 @@
                 </thead>
 
                 <tbody class="divide-y divide-gray-100">
+                    {{-- MAPPING KATEGORI (GABUNGAN CS & TELLER) --}}
+                    @php
+                        $kategoriMap = [
+                            // CS
+                            'FPR' => 'Form pembukaan rekening (FPR)',
+                            'PDN' => 'Form perubahan data nasabah (PDN)',
+                            'FPTR' => 'Form penutupan rekening (FPTR)',
+                            'FPL' => 'Form Layanan kartu & digital banking (FPL)',
+                            // Teller
+                            'TL-ST' => 'Transaksi setoran dan penarikan (TL-ST)',
+                            'TL-TP' => 'Transaksi transfer dan pembayaran (TL-TP)',
+                            'TL-GK' => 'Transaksi Giro, Kliring, Valuta (TL-GK)',
+                            'TL-LA' => 'Laporan dan Administrasi teller (TL-LA)',
+                        ];
+                    @endphp
+
                     @forelse($documents as $doc)
                         <tr class="hover:bg-gray-50 transition">
                             <td class="py-3 px-4 font-medium text-gray-900">{{ $doc->document_number }}</td>
-                            <td class="py-3 px-4">{{ $doc->category }}</td>
+                            {{-- MENAMPILKAN KATEGORI LENGKAP --}}
+                            <td class="py-3 px-4">{{ $kategoriMap[$doc->category] ?? $doc->category }}</td>
                             <td class="py-3 px-4">
                                 @if ($doc->source == 'teller')
                                     <span
@@ -223,8 +250,6 @@
                             </td>
                             <td class="py-3 px-4">{{ \Carbon\Carbon::parse($doc->document_date)->format('d M Y') }}
                             </td>
-
-                            {{-- KOLOM LOKASI YANG DIPERBAIKI --}}
                             <td class="py-3 px-4 text-gray-600">
                                 <div class="flex items-center gap-2">
                                     <span class="px-2 py-1 bg-gray-100 rounded border text-xs font-medium">Lmr
@@ -235,7 +260,6 @@
                                         {{ $doc->box }}</span>
                                 </div>
                             </td>
-
                             <td class="py-3 px-4">
                                 @if ($doc->status === 'approved')
                                     <span
