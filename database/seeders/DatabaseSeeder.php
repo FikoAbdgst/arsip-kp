@@ -25,6 +25,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Panggil DocumentSeeder
-        $this->call(DocumentSeeder::class);
+        // $this->call(DocumentSeeder::class);
     }
 }
