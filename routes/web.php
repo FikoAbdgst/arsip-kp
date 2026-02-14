@@ -25,6 +25,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
     Route::put('/documents/{id}', [DocumentController::class, 'update'])->name('documents.update');
     Route::delete('/documents/{id}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+    // Tambahkan di routes/web.php di dalam group middleware
+    Route::get('/documents/generate-number', [DocumentController::class, 'generateNumber'])->name('documents.generate-number');
 
     // Verifikasi (Supervisor Only)
     // Sebaiknya bungkus dengan middleware role:supervisor jika ada

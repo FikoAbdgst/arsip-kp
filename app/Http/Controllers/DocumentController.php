@@ -197,4 +197,35 @@ class DocumentController extends Controller
 
         return redirect()->back()->with('success', 'Dokumen berhasil dihapus permanen.');
     }
+    // Tambahkan method ini di dalam class DocumentController
+
+    public function generateNumber(Request $request)
+    {
+        $prefix = $request->query('prefix'); // Contoh: TL-ST, FPR
+
+        if (!$prefix) {
+            return response()->json(['number' => '']);
+        }
+
+        // Cari dokumen terakhir dengan prefix tersebut
+        // Kita asumsikan format: KODE-001, KODE-002
+        $lastDoc = Document::where('document_number', 'like', $prefix . '-%')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if ($lastDoc) {
+            // Ambil angka dibelakang strip, contoh: TL-ST-005 -> ambil 005
+            $parts = explode('-', $lastDoc->document_number);
+            $lastNumber = end($parts);
+            $newNumber = intval($lastNumber) + 1;
+        } else {
+            // Jika belum ada, mulai dari 1
+            $newNumber = 1;
+        }
+
+        // Format ulang menjadi 3 digit (001, 002, dst)
+        $formattedNumber = $prefix . '-' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+
+        return response()->json(['number' => $formattedNumber]);
+    }
 }

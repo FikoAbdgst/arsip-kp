@@ -4,7 +4,7 @@
         <div class="text-sm text-gray-500">Dokumen</div>
         <div class="text-xl font-semibold">Form Upload Dokumen Arsip</div>
         <div class="text-sm text-gray-600 mt-1">
-            Isi metadata dokumen + lokasi fisik penyimpanan. (UI dulu)
+            Isi metadata dokumen + lokasi fisik penyimpanan.
         </div>
     </div>
 
@@ -13,53 +13,67 @@
         <div class="lg:col-span-2 bg-white rounded-xl border p-6">
             <h3 class="text-lg font-semibold mb-4">Data Dokumen</h3>
 
-            <form class="space-y-4">
-                {{-- Row 1 --}}
+            <form action="{{ route('documents.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                @csrf
+
+                {{-- Row 1: Sumber & Kategori (Posisi Sumber dipindah ke atas agar alur logis) --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {{-- 1. Sumber Dokumen --}}
                     <div>
-                        <label class="block text-sm text-gray-600 mb-1">Kategori Dokumen</label>
-                        <select id="kategori" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">Pilih kategori</option>
-                            <option value="SLP">Slip Setoran (SLP)</option>
-                            <option value="TRF">Bukti Transfer (TRF)</option>
-                            <option value="PNR">Bukti Penarikan (PNR)</option>
-                            <option value="FRM">Form Rekening (FRM)</option>
-                            <option value="KEL">Keluhan Nasabah (KEL)</option>
+                        <label class="block text-sm text-gray-600 mb-1">Sumber Dokumen</label>
+                        <select id="sumber_dokumen" name="source"
+                            class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Pilih sumber</option>
+                            <option value="teller">Teller</option>
+                            <option value="cs">Customer Service (CS)</option>
                         </select>
-                        <p class="text-xs text-gray-500 mt-1">Prefix nomor bisa mengikuti kategori.</p>
                     </div>
 
+                    {{-- 2. Kategori Dokumen (Isi dinamis by JS) --}}
                     <div>
-                        <label class="block text-sm text-gray-600 mb-1">Nomor Dokumen</label>
-                        <input id="nomor_dokumen" type="text" placeholder="contoh: SLP-021"
-                            class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
-                        <p class="text-xs text-gray-500 mt-1">Boleh manual dulu. Nanti bisa auto-generate.</p>
+                        <label class="block text-sm text-gray-600 mb-1">Kategori Dokumen</label>
+                        <select id="kategori" name="category"
+                            class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                            disabled>
+                            <option value="">Pilih sumber dahulu</option>
+                        </select>
                     </div>
                 </div>
 
-                {{-- Row 2 --}}
+                {{-- Row 2: Nomor & Tanggal --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {{-- 3. Nomor Dokumen (Otomatis) --}}
                     <div>
-                        <label class="block text-sm text-gray-600 mb-1">Tanggal Dokumen</label>
-                        <input type="date" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
+                        <label class="block text-sm text-gray-600 mb-1">Nomor Dokumen</label>
+                        {{-- Input dibuat readonly agar user tidak salah edit format, tapi tetap bisa submit --}}
+                        <input id="nomor_dokumen" name="document_number" type="text" placeholder="Otomatis terisi..."
+                            class="w-full rounded-lg border-gray-300 bg-gray-100 cursor-not-allowed focus:border-blue-500 focus:ring-blue-500"
+                            readonly />
+                        <p class="text-xs text-gray-500 mt-1">Nomor digenerate otomatis berdasarkan kategori.</p>
                     </div>
 
+                    {{-- 4. Tanggal --}}
                     <div>
-                        <label class="block text-sm text-gray-600 mb-1">Sumber Dokumen</label>
-                        <select class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">Pilih sumber</option>
-                            <option value="Teller">Teller</option>
-                            <option value="CS">Customer Service</option>
-                        </select>
+                        <label class="block text-sm text-gray-600 mb-1">Tanggal Dokumen</label>
+                        <input type="date" name="document_date"
+                            class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                     </div>
+                </div>
+
+                {{-- Khusus CS: CIF (Opsional/Muncul jika CS) --}}
+                <div id="cif_field" class="hidden">
+                    <label class="block text-sm text-gray-600 mb-1">Nomor CIF</label>
+                    <input type="text" name="cif" placeholder="Masukkan nomor CIF Nasabah"
+                        class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                 </div>
 
                 {{-- Upload --}}
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Upload File Dokumen</label>
-                    <input type="file" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
+                    <input type="file" name="file_path"
+                        class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                     <p class="text-xs text-gray-500 mt-1">
-                        Format: PDF/DOC/DOCX/JPG/PNG • Maks 5MB
+                        Format: PDF/JPG/PNG • Maks 2MB
                     </p>
                 </div>
 
@@ -70,75 +84,172 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm text-gray-600 mb-1">Lemari</label>
-                            <select id="lemari" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                            <select id="lemari" name="cabinet"
+                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                                 <option value="">Pilih lemari</option>
                                 <option value="A">Lemari A</option>
                                 <option value="B">Lemari B</option>
+                                <option value="C">Lemari C</option>
+                                <option value="D">Lemari D</option>
                             </select>
                         </div>
 
                         <div>
                             <label class="block text-sm text-gray-600 mb-1">Rak</label>
-                            <select id="rak" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" disabled>
+                            <select id="rak" name="shelf"
+                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                disabled>
                                 <option value="">Pilih rak</option>
                             </select>
                         </div>
 
                         <div>
                             <label class="block text-sm text-gray-600 mb-1">Kotak</label>
-                            <select id="kotak" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" disabled>
+                            <select id="kotak" name="box"
+                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                disabled>
                                 <option value="">Pilih kotak</option>
                             </select>
                         </div>
                     </div>
-
-                    <p class="text-xs text-gray-500 mt-2">
-                        Alur: pilih Lemari → Rak → Kotak. (UI + interaksi front-end dulu)
-                    </p>
                 </div>
 
                 {{-- Keterangan --}}
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Keterangan (Opsional)</label>
-                    <textarea rows="3" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="contoh: Dokumen transaksi teller shift pagi"></textarea>
+                    <textarea name="description" rows="3"
+                        class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="Tambahkan catatan jika perlu..."></textarea>
                 </div>
 
                 {{-- Buttons --}}
                 <div class="flex flex-col sm:flex-row gap-2 sm:justify-end pt-2">
                     <a href="{{ route('dashboard') }}"
-                    class="px-4 py-2 rounded-lg border bg-white hover:bg-gray-50 text-sm text-center">
+                        class="px-4 py-2 rounded-lg border bg-white hover:bg-gray-50 text-sm text-center">
                         Batal
                     </a>
-                    <button type="button"
+                    <button type="submit"
                         class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm">
-                        Simpan (Dummy)
+                        Simpan Dokumen
                     </button>
                 </div>
             </form>
         </div>
 
         {{-- Side info --}}
-        <div class="bg-white rounded-xl border p-6">
+        <div class="bg-white rounded-xl border p-6 h-fit">
             <h3 class="text-lg font-semibold mb-3">Panduan Singkat</h3>
-
             <ol class="list-decimal pl-5 text-sm text-gray-700 space-y-2">
-                <li>Pilih kategori untuk menentukan jenis dokumen.</li>
-                <li>Isi nomor dokumen sesuai format (misal: SLP-021).</li>
-                <li>Upload file digital untuk arsip server.</li>
-                <li>Catat lokasi fisik dokumen (lemari → rak → kotak).</li>
-                <li>Status awal akan <span class="font-medium">Pending</span> (menunggu verifikasi).</li>
+                <li>Pilih <b>Sumber Dokumen</b> (Teller/CS) terlebih dahulu.</li>
+                <li>Pilih <b>Kategori</b>, nomor dokumen akan muncul otomatis.</li>
+                <li>Upload file digital.</li>
+                <li>Tentukan lokasi penyimpanan fisik.</li>
             </ol>
-
-            <div class="mt-6 p-4 rounded-lg bg-gray-50 text-sm text-gray-600">
-                <div class="font-medium mb-1">Contoh lokasi</div>
-                Lemari A • Rak 2 • Kotak 7
-            </div>
         </div>
     </div>
 
-    {{-- Script dropdown bertingkat (front-end only) --}}
+    {{-- JAVASCRIPT LOGIC --}}
     <script>
+        // Data Kategori sesuai permintaan
+        const categoriesData = {
+            'cs': [{
+                    code: 'FPR',
+                    name: 'Form pembukaan rekening (FPR)'
+                },
+                {
+                    code: 'PDN',
+                    name: 'Form perubahan data nasabah (PDN)'
+                },
+                {
+                    code: 'FPTR',
+                    name: 'Form penutupan rekening (FPTR)'
+                },
+                {
+                    code: 'FPL',
+                    name: 'Form Layanan kartu & digital banking (FPL)'
+                }
+            ],
+            'teller': [{
+                    code: 'TL-ST',
+                    name: 'Transaksi setoran dan penarikan (TL-ST)'
+                },
+                {
+                    code: 'TL-TP',
+                    name: 'Transaksi transfer dan pembayaran (TL-TP)'
+                },
+                {
+                    code: 'TL-GK',
+                    name: 'Transaksi Giro, Kliring, Valuta (TL-GK)'
+                },
+                {
+                    code: 'TL-LA',
+                    name: 'Laporan dan Administrasi teller (TL-LA)'
+                }
+            ]
+        };
+
+        // Elements
+        const sourceSelect = document.getElementById('sumber_dokumen');
+        const categorySelect = document.getElementById('kategori');
+        const docNumberInput = document.getElementById('nomor_dokumen');
+        const cifField = document.getElementById('cif_field');
+
+        // 1. Logic Ganti Sumber (Teller/CS)
+        sourceSelect.addEventListener('change', function() {
+            const source = this.value;
+
+            // Reset Dropdown Kategori
+            categorySelect.innerHTML = '<option value="">Pilih kategori</option>';
+            categorySelect.disabled = true;
+            docNumberInput.value = '';
+
+            // Toggle Field CIF (Hanya untuk CS)
+            if (source === 'cs') {
+                cifField.classList.remove('hidden');
+            } else {
+                cifField.classList.add('hidden');
+            }
+
+            if (source && categoriesData[source]) {
+                categorySelect.disabled = false;
+
+                // Populate options
+                categoriesData[source].forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.code; // Value yang dikirim ke DB adalah KODE (e.g., TL-ST)
+                    option.textContent = cat.name;
+                    categorySelect.appendChild(option);
+                });
+            }
+        });
+
+        // 2. Logic Ganti Kategori -> Auto Generate Number (AJAX)
+        categorySelect.addEventListener('change', function() {
+            const categoryCode = this.value;
+
+            if (!categoryCode) {
+                docNumberInput.value = '';
+                return;
+            }
+
+            // Tampilkan loading/placeholder
+            docNumberInput.value = 'Mengambil nomor...';
+
+            // Fetch ke Backend
+            fetch(`{{ route('documents.generate-number') }}?prefix=${categoryCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.number) {
+                        docNumberInput.value = data.number;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    docNumberInput.value = 'Gagal mengambil nomor';
+                });
+        });
+
+        // --- Logic Lemari/Rak (Existing Code) ---
         const lemari = document.getElementById('lemari');
         const rak = document.getElementById('rak');
         const kotak = document.getElementById('kotak');
@@ -148,17 +259,10 @@
             selectEl.disabled = true;
         }
 
-        // init
-        resetSelect(rak, 'Pilih rak');
-        resetSelect(kotak, 'Pilih kotak');
-
         lemari.addEventListener('change', () => {
             resetSelect(rak, 'Pilih rak');
             resetSelect(kotak, 'Pilih kotak');
-
             if (!lemari.value) return;
-
-            // contoh rak 1-5
             rak.disabled = false;
             for (let i = 1; i <= 5; i++) {
                 const opt = document.createElement('option');
@@ -171,8 +275,6 @@
         rak.addEventListener('change', () => {
             resetSelect(kotak, 'Pilih kotak');
             if (!rak.value) return;
-
-            // contoh kotak 1-10
             kotak.disabled = false;
             for (let i = 1; i <= 10; i++) {
                 const opt = document.createElement('option');
@@ -180,16 +282,6 @@
                 opt.textContent = `Kotak ${i}`;
                 kotak.appendChild(opt);
             }
-        });
-
-        // optional: auto isi prefix nomor dokumen
-        const kategori = document.getElementById('kategori');
-        const nomor = document.getElementById('nomor_dokumen');
-
-        kategori.addEventListener('change', () => {
-            if (!kategori.value) return;
-            // kalau kosong, bantu isi prefix
-            if (!nomor.value) nomor.value = `${kategori.value}-`;
         });
     </script>
 </x-app-shell>
