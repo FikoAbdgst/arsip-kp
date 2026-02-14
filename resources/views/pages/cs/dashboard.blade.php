@@ -19,7 +19,6 @@
         </div>
 
         {{-- Statistik Card --}}
-        {{-- Menggunakan 'request' untuk mengecek filter aktif agar style border biru tetap ada setelah reload --}}
         <div id="cs-stats">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
                 {{-- Card Total --}}
@@ -59,19 +58,10 @@
         </div>
     </div>
 
-    {{-- Alert --}}
+    {{-- Alert (Hanya Success, Error dipindah ke field) --}}
     @if (session('success'))
         <div class="mt-4 p-4 bg-green-100 text-green-700 rounded-lg shadow-sm border border-green-200 mb-4">
             <i class="fas fa-check-circle mr-2"></i> {{ session('success') }}
-        </div>
-    @endif
-    @if ($errors->any())
-        <div class="mt-4 p-4 bg-red-100 text-red-700 rounded-lg shadow-sm border border-red-200 mb-4">
-            <ul class="list-disc pl-5">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
         </div>
     @endif
 
@@ -101,7 +91,7 @@
                     </span>
                 </h3>
 
-                {{-- Tab Filter Lifecycle (Aktif vs Tidak Aktif) --}}
+                {{-- Tab Filter Lifecycle --}}
                 <div class="flex bg-gray-100 p-1 rounded-lg">
                     <button onclick="applyFilter('lifecycle', 'all')"
                         class="px-4 py-1.5 text-sm font-medium rounded-md transition-all {{ request('lifecycle', 'all') == 'all' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
@@ -182,7 +172,6 @@
                             </tr>
 
                             {{-- MODAL DETAIL (VIEW & EDIT) --}}
-                            {{-- (Ini harus ada di dalam loop agar ID unik per dokumen) --}}
                             <div id="detailModal-{{ $doc->id }}"
                                 class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50 backdrop-blur-sm transition-opacity">
                                 <div
@@ -379,6 +368,10 @@
                                             @csrf @method('PUT')
                                             <input type="hidden" name="source" value="cs">
 
+                                            {{-- Penanda bahwa error berasal dari form edit ini --}}
+                                            <input type="hidden" name="form_selector"
+                                                value="edit-{{ $doc->id }}">
+
                                             <div class="p-6">
                                                 <div class="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4">
                                                     <div class="flex">
@@ -407,39 +400,69 @@
                                                         <select name="category"
                                                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                                             required>
+                                                            @php
+                                                                $val =
+                                                                    old('form_selector') == 'edit-' . $doc->id
+                                                                        ? old('category')
+                                                                        : $doc->category;
+                                                            @endphp
                                                             <option value="Form Rekening"
-                                                                {{ $doc->category == 'Form Rekening' ? 'selected' : '' }}>
+                                                                {{ $val == 'Form Rekening' ? 'selected' : '' }}>
                                                                 Form Rekening</option>
                                                             <option value="Keluhan Nasabah"
-                                                                {{ $doc->category == 'Keluhan Nasabah' ? 'selected' : '' }}>
+                                                                {{ $val == 'Keluhan Nasabah' ? 'selected' : '' }}>
                                                                 Keluhan Nasabah</option>
                                                             <option value="Lainnya"
-                                                                {{ $doc->category == 'Lainnya' ? 'selected' : '' }}>
+                                                                {{ $val == 'Lainnya' ? 'selected' : '' }}>
                                                                 Lainnya
                                                             </option>
                                                         </select>
+                                                        @if (old('form_selector') == 'edit-' . $doc->id)
+                                                            @error('category')
+                                                                <p class="text-red-500 text-xs mt-1">{{ $message }}
+                                                                </p>
+                                                            @enderror
+                                                        @endif
                                                     </div>
                                                     <div>
                                                         <label class="block text-sm font-medium mb-1">Nomor
                                                             Dokumen</label>
                                                         <input type="text" name="document_number"
-                                                            value="{{ $doc->document_number }}"
+                                                            value="{{ old('form_selector') == 'edit-' . $doc->id ? old('document_number') : $doc->document_number }}"
                                                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                                             required>
+                                                        @if (old('form_selector') == 'edit-' . $doc->id)
+                                                            @error('document_number')
+                                                                <p class="text-red-500 text-xs mt-1">{{ $message }}
+                                                                </p>
+                                                            @enderror
+                                                        @endif
                                                     </div>
                                                     <div class="md:col-span-2">
                                                         <label class="block text-sm font-medium mb-1">Tanggal</label>
                                                         <input type="date" name="document_date"
-                                                            value="{{ $doc->document_date }}"
+                                                            value="{{ old('form_selector') == 'edit-' . $doc->id ? old('document_date') : $doc->document_date }}"
                                                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                                             required>
+                                                        @if (old('form_selector') == 'edit-' . $doc->id)
+                                                            @error('document_date')
+                                                                <p class="text-red-500 text-xs mt-1">{{ $message }}
+                                                                </p>
+                                                            @enderror
+                                                        @endif
                                                     </div>
                                                     <div>
                                                         <label class="block text-sm font-medium mb-1">CIF</label>
                                                         <input type="text" name="cif"
-                                                            value="{{ $doc->cif }}"
+                                                            value="{{ old('form_selector') == 'edit-' . $doc->id ? old('cif') : $doc->cif }}"
                                                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                                             required>
+                                                        @if (old('form_selector') == 'edit-' . $doc->id)
+                                                            @error('cif')
+                                                                <p class="text-red-500 text-xs mt-1">{{ $message }}
+                                                                </p>
+                                                            @enderror
+                                                        @endif
                                                     </div>
                                                     <div class="md:col-span-2 text-center border-b pb-4 mb-2">
                                                         <div class="mb-2 text-sm text-gray-500 font-medium">File Saat
@@ -457,6 +480,12 @@
                                                         <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak
                                                             ingin
                                                             mengubah file.</p>
+                                                        @if (old('form_selector') == 'edit-' . $doc->id)
+                                                            @error('file_path')
+                                                                <p class="text-red-500 text-xs mt-1">{{ $message }}
+                                                                </p>
+                                                            @enderror
+                                                        @endif
                                                     </div>
                                                     <div
                                                         class="md:col-span-2 border-t pt-2 mt-2 font-semibold text-gray-700">
@@ -466,8 +495,14 @@
                                                         <select name="cabinet"
                                                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500">
                                                             @foreach (['A', 'B', 'C', 'D'] as $c)
+                                                                @php
+                                                                    $sel =
+                                                                        old('form_selector') == 'edit-' . $doc->id
+                                                                            ? old('cabinet')
+                                                                            : $doc->cabinet;
+                                                                @endphp
                                                                 <option value="{{ $c }}"
-                                                                    {{ $doc->cabinet == $c ? 'selected' : '' }}>Lemari
+                                                                    {{ $sel == $c ? 'selected' : '' }}>Lemari
                                                                     {{ $c }}</option>
                                                             @endforeach
                                                         </select>
@@ -477,8 +512,14 @@
                                                         <select name="shelf"
                                                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500">
                                                             @foreach (range(1, 5) as $r)
+                                                                @php
+                                                                    $sel =
+                                                                        old('form_selector') == 'edit-' . $doc->id
+                                                                            ? old('shelf')
+                                                                            : $doc->shelf;
+                                                                @endphp
                                                                 <option value="{{ $r }}"
-                                                                    {{ $doc->shelf == $r ? 'selected' : '' }}>Rak
+                                                                    {{ $sel == $r ? 'selected' : '' }}>Rak
                                                                     {{ $r }}</option>
                                                             @endforeach
                                                         </select>
@@ -488,8 +529,14 @@
                                                         <select name="box"
                                                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500">
                                                             @foreach (range(1, 10) as $b)
+                                                                @php
+                                                                    $sel =
+                                                                        old('form_selector') == 'edit-' . $doc->id
+                                                                            ? old('box')
+                                                                            : $doc->box;
+                                                                @endphp
                                                                 <option value="{{ $b }}"
-                                                                    {{ $doc->box == $b ? 'selected' : '' }}>Kotak
+                                                                    {{ $sel == $b ? 'selected' : '' }}>Kotak
                                                                     {{ $b }}</option>
                                                             @endforeach
                                                         </select>
@@ -498,7 +545,7 @@
                                                         <label
                                                             class="block text-sm font-medium mb-1">Keterangan</label>
                                                         <textarea name="description" rows="2"
-                                                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500">{{ $doc->description }}</textarea>
+                                                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500">{{ old('form_selector') == 'edit-' . $doc->id ? old('description') : $doc->description }}</textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -554,6 +601,9 @@
                 @csrf
                 <input type="hidden" name="source" value="cs">
 
+                {{-- Penanda Form Selector --}}
+                <input type="hidden" name="form_selector" value="uploadModalCs">
+
                 <div class="p-5 border-b flex items-center justify-between bg-gray-50 rounded-t-2xl">
                     <h3 class="text-lg font-bold text-gray-800">Upload Dokumen CS</h3>
                     <button type="button" onclick="closeModal('uploadModalCs')"
@@ -574,28 +624,57 @@
                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                             required>
                             <option value="" selected disabled>Pilih Kategori...</option>
-                            <option value="Form Rekening">Form Rekening</option>
-                            <option value="Keluhan Nasabah">Keluhan Nasabah</option>
-                            <option value="Lainnya">Lainnya</option>
+                            <option value="Form Rekening"
+                                {{ old('form_selector') == 'uploadModalCs' && old('category') == 'Form Rekening' ? 'selected' : '' }}>
+                                Form Rekening</option>
+                            <option value="Keluhan Nasabah"
+                                {{ old('form_selector') == 'uploadModalCs' && old('category') == 'Keluhan Nasabah' ? 'selected' : '' }}>
+                                Keluhan Nasabah</option>
+                            <option value="Lainnya"
+                                {{ old('form_selector') == 'uploadModalCs' && old('category') == 'Lainnya' ? 'selected' : '' }}>
+                                Lainnya</option>
                         </select>
+                        @if (old('form_selector') == 'uploadModalCs')
+                            @error('category')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        @endif
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">No Dokumen</label>
                         <input type="text" name="document_number"
+                            value="{{ old('form_selector') == 'uploadModalCs' ? old('document_number') : '' }}"
                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                             required>
+                        @if (old('form_selector') == 'uploadModalCs')
+                            @error('document_number')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        @endif
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Tanggal</label>
                         <input type="date" name="document_date"
+                            value="{{ old('form_selector') == 'uploadModalCs' ? old('document_date') : '' }}"
                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                             required>
+                        @if (old('form_selector') == 'uploadModalCs')
+                            @error('document_date')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        @endif
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">CIF</label>
                         <input type="text" name="cif"
+                            value="{{ old('form_selector') == 'uploadModalCs' ? old('cif') : '' }}"
                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                             required>
+                        @if (old('form_selector') == 'uploadModalCs')
+                            @error('cif')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        @endif
                     </div>
 
                     <div class="md:col-span-2 flex flex-col items-center">
@@ -615,6 +694,11 @@
                                 onchange="previewImage(event, 'preview-upload-cs')"
                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required>
                         </div>
+                        @if (old('form_selector') == 'uploadModalCs')
+                            @error('file_path')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        @endif
                     </div>
 
                     <div class="md:col-span-2 border-t pt-2 mt-2 font-semibold text-gray-700">Lokasi Fisik</div>
@@ -625,10 +709,11 @@
                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                             required>
                             <option value="" selected disabled>Pilih Lemari</option>
-                            <option value="A">Lemari A</option>
-                            <option value="B">Lemari B</option>
-                            <option value="C">Lemari C</option>
-                            <option value="D">Lemari D</option>
+                            @foreach (['A', 'B', 'C', 'D'] as $c)
+                                <option value="{{ $c }}"
+                                    {{ old('form_selector') == 'uploadModalCs' && old('cabinet') == $c ? 'selected' : '' }}>
+                                    Lemari {{ $c }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
@@ -638,7 +723,9 @@
                             required>
                             <option value="" selected disabled>Pilih Rak</option>
                             @foreach (range(1, 5) as $i)
-                                <option value="{{ $i }}">Rak {{ $i }}</option>
+                                <option value="{{ $i }}"
+                                    {{ old('form_selector') == 'uploadModalCs' && old('shelf') == $i ? 'selected' : '' }}>
+                                    Rak {{ $i }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -649,15 +736,16 @@
                             required>
                             <option value="" selected disabled>Pilih Kotak</option>
                             @foreach (range(1, 10) as $i)
-                                <option value="{{ $i }}">Kotak {{ $i }}</option>
+                                <option value="{{ $i }}"
+                                    {{ old('form_selector') == 'uploadModalCs' && old('box') == $i ? 'selected' : '' }}>
+                                    Kotak {{ $i }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="md:col-span-2"><label class="block text-sm font-medium mb-1">Keterangan</label>
                         <textarea name="description" rows="2"
                             class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Masukkan Keterangan (opsional)"></textarea>
-
+                            placeholder="Masukkan Keterangan (opsional)">{{ old('form_selector') == 'uploadModalCs' ? old('description') : '' }}</textarea>
                     </div>
 
                     <div class="p-5 border-t md:col-span-2 bg-gray-50 flex justify-end gap-2 rounded-b-2xl">
@@ -679,7 +767,7 @@
             // Set parameter filter (approval atau lifecycle)
             url.searchParams.set(key, value);
 
-            // Reset halaman ke 1 setiap kali filter berubah agar tidak error (misal di halaman 2 tapi hasil filter cuma 1 halaman)
+            // Reset halaman ke 1 setiap kali filter berubah
             url.searchParams.delete('page');
 
             // Reload halaman dengan parameter baru
@@ -766,7 +854,20 @@
             }
         `;
         document.head.appendChild(style);
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Check for validation errors and reopen modal
+            let formSelector = "{{ old('form_selector') }}";
+
+            if (formSelector === 'uploadModalCs') {
+                openModal('uploadModalCs');
+            } else if (formSelector && formSelector.startsWith('edit-')) {
+                // Ambil ID dari selector, misal "edit-5" -> "5"
+                let id = formSelector.replace('edit-', '');
+                openDetail(id);
+                toggleEditMode(id, true);
+            }
+
             activateRealtime('cs-stats', 5000);
             activateRealtime('cs-table', 5000);
         });
